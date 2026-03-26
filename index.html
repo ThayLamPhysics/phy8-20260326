@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vật Lý 8 - Sự Truyền Nhiệt | Thầy Lâm - Typographic Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            chtml: { displayAlign: 'left' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --accent: #facc15;
+            --bg: #ffffff;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+        }
+
+        .serif { font-family: 'Playfair Display', serif; }
+
+        /* Typographic Decorations */
+        .text-huge {
+            font-size: clamp(3rem, 15vw, 12rem);
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+
+        .highlight-yellow {
+            background: linear-gradient(180deg, transparent 60%, var(--accent) 60%);
+        }
+
+        /* Tab Transition */
+        .tab-content {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Button */
+        .pill-button {
+            border: 2px solid var(--primary);
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .pill-button:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Cover Page Logic */
+        #cover-page.hidden-state {
+            opacity: 0;
+            transform: translateY(-100%);
+            pointer-events: none;
+        }
+
+        /* Mobile Nav Sidebar */
+        #mobile-menu {
+            transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        /* SVG Animations */
+        @keyframes flow {
+            to { stroke-dashoffset: -20; }
+        }
+        .flow-line {
+            stroke-dasharray: 10 10;
+            animation: flow 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- TRANG BÌA (TYPOGRAPHIC COVER) -->
+    <div id="cover-page" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-all duration-1000">
+        <div class="absolute top-10 left-10 text-xs font-bold tracking-[0.3em] uppercase opacity-40">Vật Lý Lớp 8 • Chương II</div>
+        
+        <div class="text-center px-6">
+            <h1 class="text-huge font-black serif mb-4 select-none">NHIỆT</h1>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-12">
+                <span class="text-2xl font-light italic serif">Câu chuyện về sự di chuyển của năng lượng</span>
+                <span class="hidden md:block w-12 h-[1px] bg-primary"></span>
+                <span class="font-bold tracking-widest uppercase text-sm">Thầy Lâm Giảng Bài</span>
+            </div>
+            <button onclick="startLesson()" class="pill-button text-lg group">
+                <span class="relative z-10">BẮT ĐẦU HỌC</span>
+            </button>
+        </div>
+        
+        <div class="absolute bottom-10 right-10 text-xs text-right opacity-40">
+            TRƯỜNG TRUNG HỌC CƠ SỞ<br>PHONG CÁCH TYPOGRAPHY
+        </div>
+    </div>
+
+    <!-- MAIN APP STRUCTURE -->
+    <div id="main-app" class="min-h-screen flex flex-col lg:flex-row">
+        
+        <!-- SIDE NAVIGATION -->
+        <nav class="hidden lg:flex flex-col w-80 h-screen sticky top-0 border-r border-gray-100 p-12 justify-between">
+            <div>
+                <div class="text-3xl font-black serif mb-12">Lý.8</div>
+                <div class="space-y-8">
+                    <button onclick="switchTab('intro')" id="nav-intro" class="nav-item active block text-left text-sm font-bold tracking-widest uppercase hover:opacity-100 opacity-30 transition-opacity">01. Giới thiệu</button>
+                    <button onclick="switchTab('tab1')" id="nav-tab1" class="nav-item block text-left text-sm font-bold tracking-widest uppercase hover:opacity-100 opacity-30 transition-opacity">02. Dẫn & Cách nhiệt</button>
+                    <button onclick="switchTab('tab2')" id="nav-tab2" class="nav-item block text-left text-sm font-bold tracking-widest uppercase hover:opacity-100 opacity-30 transition-opacity">03. Các phương thức</button>
+                    <button onclick="switchTab('tab3')" id="nav-tab3" class="nav-item block text-left text-sm font-bold tracking-widest uppercase hover:opacity-100 opacity-30 transition-opacity">04. Ứng dụng thực tế</button>
+                    <button onclick="switchTab('test')" id="nav-test" class="nav-item block text-left text-sm font-bold tracking-widest uppercase hover:opacity-100 opacity-30 transition-opacity">05. Kiểm tra</button>
+                </div>
+            </div>
+            <!-- REMOVED GEMINI FOOTER TEXT -->
+        </nav>
+
+        <!-- MOBILE HEADER & MENU -->
+        <div class="lg:hidden flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-40">
+            <span class="font-black serif text-xl">Lý.8</span>
+            <button id="hamburger-button" class="p-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16M4 16h16"/></svg>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="fixed inset-0 bg-white z-[60] flex flex-col p-12 transform -translate-x-full lg:hidden">
+            <div class="flex justify-end">
+                <button id="close-menu-button" class="p-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="flex-grow flex flex-col justify-center space-y-8 text-2xl font-bold serif">
+                <button onclick="switchTab('intro')" class="mobile-nav-item text-left">Giới thiệu</button>
+                <button onclick="switchTab('tab1')" class="mobile-nav-item text-left">Dẫn & Cách nhiệt</button>
+                <button onclick="switchTab('tab2')" class="mobile-nav-item text-left">Các phương thức</button>
+                <button onclick="switchTab('tab3')" class="mobile-nav-item text-left">Ứng dụng thực tế</button>
+                <button onclick="switchTab('test')" class="mobile-nav-item text-left">Kiểm tra</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-grow p-6 md:p-12 lg:p-24 overflow-x-hidden">
+            
+            <!-- TAB: GIỚI THIỆU -->
+            <section id="content-intro" class="tab-content block">
+                <div class="max-w-3xl">
+                    <span class="text-xs font-black uppercase tracking-widest mb-4 block text-green-600">Mở đầu</span>
+                    <h2 class="text-5xl md:text-7xl font-black serif mb-10 leading-tight">Mọi vật đều đang <span class="highlight-yellow">trao đổi</span> với nhau.</h2>
+                    <div class="space-y-8 text-xl serif leading-relaxed">
+                        <p class="italic">"Này các em, thế giới này không hề tĩnh lặng như chúng ta tưởng."</p>
+                        <p>Hãy tưởng tượng nhiệt năng giống như một <strong>lời nhắn nhủ</strong>. Khi em chạm tay vào một tách trà nóng, tách trà đang 'nói' với em về sự náo động của các phân tử bên trong nó. Sự truyền nhiệt không đơn thuần là vật lý, nó là sự sẻ chia năng lượng để đạt đến sự cân bằng.</p>
+                        <p>Trong bài học này, Thầy Lâm sẽ dẫn các em đi qua những câu chuyện về sự di chuyển âm thầm đó.</p>
+                    </div>
+                    <div class="mt-16 pt-16 border-t border-gray-100 flex items-center gap-8">
+                        <div class="flex-grow h-[1px] bg-gray-200"></div>
+                        <button onclick="switchTab('tab1')" class="pill-button">Khám phá Chương 02</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: DẪN & CÁCH NHIỆT -->
+            <section id="content-tab1" class="tab-content hidden">
+                <div class="max-w-4xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-20">
+                        <div>
+                            <span class="text-xs font-black uppercase tracking-widest mb-4 block opacity-50">Chương 02</span>
+                            <h2 class="text-5xl font-black serif mb-8">Dẫn nhiệt là gì?</h2>
+                            <p class="text-lg mb-8">Là sự truyền nhiệt năng từ những hạt có năng lượng cao sang những hạt có năng lượng thấp hơn thông qua <strong>va chạm</strong>.</p>
+                            
+                            <div class="space-y-12">
+                                <div class="border-l-2 border-primary pl-6">
+                                    <h4 class="font-extrabold uppercase text-xs tracking-widest mb-2">Vật dẫn nhiệt tốt</h4>
+                                    <p class="serif italic text-lg">"Như những người chạy tiếp sức nhanh nhẹn."</p>
+                                    <p class="text-sm mt-2">Kim loại (Đồng, Nhôm, Sắt...) dẫn nhiệt cực tốt vì cấu trúc phân tử sít sao.</p>
+                                </div>
+                                <div class="border-l-2 border-yellow-500 pl-6">
+                                    <h4 class="font-extrabold uppercase text-xs tracking-widest mb-2">Vật cách nhiệt</h4>
+                                    <p class="serif italic text-lg">"Như những bức tường ngăn cách dòng chảy."</p>
+                                    <p class="text-sm mt-2">Gỗ, nhựa, bông, và đặc biệt là không khí dẫn nhiệt rất kém.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col justify-center">
+                            <div class="bg-gray-50 p-8 border border-gray-100 text-center">
+                                <h5 class="text-[10px] font-bold uppercase tracking-widest mb-6 opacity-40">Mô phỏng: Sự truyền động năng</h5>
+                                <svg viewBox="0 0 200 100" class="w-full">
+                                    <!-- Rod -->
+                                    <rect x="20" y="45" width="160" height="10" fill="none" stroke="#064e3b" stroke-width="1"/>
+                                    <!-- Particles -->
+                                    <circle cx="30" cy="50" r="3" fill="#ef4444">
+                                        <animate attributeName="r" values="3;5;3" dur="0.5s" repeatCount="indefinite" />
+                                    </circle>
+                                    <circle cx="50" cy="50" r="3" fill="#ef4444">
+                                        <animate attributeName="r" values="3;5;3" dur="0.5s" begin="0.1s" repeatCount="indefinite" />
+                                    </circle>
+                                    <circle cx="70" cy="50" r="3" fill="#fbbf24">
+                                        <animate attributeName="r" values="2;4;2" dur="0.8s" begin="0.3s" repeatCount="indefinite" />
+                                    </circle>
+                                    <circle cx="90" cy="50" r="3" fill="#fbbf24">
+                                        <animate attributeName="r" values="2;4;2" dur="0.8s" begin="0.5s" repeatCount="indefinite" />
+                                    </circle>
+                                    <circle cx="110" cy="50" r="3" fill="#3b82f6" />
+                                    <circle cx="130" cy="50" r="3" fill="#3b82f6" />
+                                    <circle cx="150" cy="50" r="3" fill="#3b82f6" />
+                                </svg>
+                                <p class="text-[10px] mt-6 italic opacity-60 italic">Nhiệt truyền từ nơi rung động mạnh sang nơi rung động yếu.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: CÁC PHƯƠNG THỨC -->
+            <section id="content-tab2" class="tab-content hidden">
+                <div class="max-w-5xl">
+                    <h2 class="text-6xl font-black serif mb-16 text-center">Ba hình thái di chuyển.</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 border-y border-gray-100 py-16">
+                        <div class="text-center md:text-left">
+                            <span class="text-4xl font-black serif text-gray-200 mb-4 block">01</span>
+                            <h3 class="text-2xl font-bold mb-4 uppercase tracking-tighter">Dẫn nhiệt</h3>
+                            <p class="text-sm opacity-70">Xảy ra trong vật rắn thông qua va chạm phân tử. Không có sự di chuyển của cả khối vật chất.</p>
+                        </div>
+                        <div class="text-center md:text-left">
+                            <span class="text-4xl font-black serif text-gray-200 mb-4 block">02</span>
+                            <h3 class="text-2xl font-bold mb-4 uppercase tracking-tighter">Đối lưu</h3>
+                            <p class="text-sm opacity-70">Dành cho chất lỏng và khí. Các dòng vật chất nóng bay lên và dòng lạnh chìm xuống tạo thành vòng lặp.</p>
+                        </div>
+                        <div class="text-center md:text-left">
+                            <span class="text-4xl font-black serif text-gray-200 mb-4 block">03</span>
+                            <h3 class="text-2xl font-bold mb-4 uppercase tracking-tighter">Bức xạ</h3>
+                            <p class="text-sm opacity-70">Truyền bằng các tia nhiệt dưới dạng sóng điện từ. Có thể đi qua chân không một cách dễ dàng.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-16 bg-green-900 p-12 text-white">
+                        <div class="flex flex-col md:flex-row gap-12 items-center">
+                            <div class="md:w-1/2">
+                                <h4 class="text-2xl font-black serif mb-4 italic">Định luật cân bằng:</h4>
+                                <div class="text-3xl font-bold bg-white/10 p-6 border-l-4 border-yellow-400">
+                                    $$ Q = m \cdot c \cdot \Delta t $$
+                                </div>
+                            </div>
+                            <div class="md:w-1/2 text-sm opacity-80 leading-loose serif">
+                                "Cũng giống như một người giàu chia sẻ tài sản cho người nghèo, vật nóng truyền bớt nhiệt năng cho vật lạnh cho đến khi cả hai có cùng nhiệt độ. Đó là sự công bằng của vũ trụ."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: ỨNG DỤNG -->
+            <section id="content-tab3" class="tab-content hidden">
+                <div class="max-w-4xl">
+                    <h2 class="text-5xl font-black serif mb-12">Trong đời sống thường nhật</h2>
+                    <div class="space-y-24">
+                        <div class="flex flex-col md:flex-row gap-12">
+                            <div class="md:w-1/2 font-bold serif text-3xl leading-snug">
+                                Tại sao <span class="highlight-yellow">bình thủy</span> lại giữ nước nóng lâu đến vậy?
+                            </div>
+                            <div class="md:w-1/2 text-lg opacity-80">
+                                Vì nó có lớp <strong>chân không</strong> ở giữa. Chân không không có phân tử, nên nhiệt không thể dẫn qua, cũng không thể đối lưu. Nhiệt bị nhốt lại bên trong như một bí mật được bảo vệ kỹ lưỡng.
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-12 border-t border-gray-100 pt-12">
+                            <div class="md:w-1/2 font-bold serif text-3xl leading-snug">
+                                <span class="text-green-600">Lớp lông dày</span> của các loài thú xứ lạnh.
+                            </div>
+                            <div class="md:w-1/2 text-lg opacity-80">
+                                Lông không chỉ để đẹp, nó nhốt những túi không khí nhỏ. Như chúng ta đã biết, không khí dẫn nhiệt rất kém, nó trở thành lớp áo giáp ngăn hơi ấm cơ thể thoát ra ngoài.
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 p-12 border-l-8 border-yellow-400">
+                            <h4 class="text-xl font-black serif mb-4">Câu hỏi suy ngẫm từ Thầy Lâm:</h4>
+                            <p class="text-lg italic serif">"Nếu các em mặc nhiều lớp áo mỏng vào mùa đông, các em sẽ thấy ấm hơn mặc một lớp áo dày. Tại sao lại như vậy? Hãy nghĩ về lớp không khí kẹt giữa các lớp áo nhé."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: KIỂM TRA -->
+            <section id="content-test" class="tab-content hidden">
+                <div class="max-w-4xl">
+                    <h2 class="text-5xl font-black serif mb-8">Kiểm tra kiến thức.</h2>
+                    <div class="border border-gray-200 h-[600px] bg-white">
+                        <iframe src="test.html" class="w-full h-full border-none"></iframe>
+                    </div>
+                    <!-- REMOVED "GỬI BÀI THU HOẠCH" BUTTON -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Start Lesson
+        function startLesson() {
+            const cover = document.getElementById('cover-page');
+            cover.classList.add('hidden-state');
+            setTimeout(() => { cover.style.display = 'none'; }, 1000);
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('block');
+            });
+
+            // Show current
+            const target = document.getElementById('content-' + tabId);
+            target.classList.remove('hidden');
+            target.classList.add('block');
+
+            // Update Desktop Nav
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.style.opacity = '0.3';
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) activeNav.style.opacity = '1';
+
+            // Close mobile menu
+            closeMobileMenu();
+
+            // Rerender MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile Menu Logic
+        const mobileMenu = document.getElementById('mobile-menu');
+        const hamburgerBtn = document.getElementById('hamburger-button');
+        const closeMenuBtn = document.getElementById('close-menu-button');
+
+        function openMobileMenu() {
+            mobileMenu.classList.remove('-translate-x-full');
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('-translate-x-full');
+        }
+
+        hamburgerBtn.addEventListener('click', openMobileMenu);
+        closeMenuBtn.addEventListener('click', closeMenuBtn);
+
+        // Optional: Hash based navigation
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash && ['intro', 'tab1', 'tab2', 'tab3', 'test'].includes(hash)) {
+                switchTab(hash);
+            }
+        });
+    </script>
+</body>
+</html>
